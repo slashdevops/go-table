@@ -1,5 +1,5 @@
-[![CodeQL Analysis](https://github.com/slashdevops/go-table/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/slashdevops/go-table/actions/workflows/codeql-analysis.yml)
-[![Gosec](https://github.com/slashdevops/go-table/actions/workflows/gosec.yml/badge.svg)](https://github.com/slashdevops/go-table/actions/workflows/gosec.yml)
+[![CodeQL](https://github.com/slashdevops/go-table/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/slashdevops/go-table/actions/workflows/codeql-analysis.yml)
+[![Run Gosec](https://github.com/slashdevops/go-table/actions/workflows/gosec.yml/badge.svg)](https://github.com/slashdevops/go-table/actions/workflows/gosec.yml)
 [![Unit Test](https://github.com/slashdevops/go-table/actions/workflows/main.yml/badge.svg)](https://github.com/slashdevops/go-table/actions/workflows/main.yml)
 [![Release](https://github.com/slashdevops/go-table/actions/workflows/release.yml/badge.svg)](https://github.com/slashdevops/go-table/actions/workflows/release.yml)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/slashdevops/go-table?style=plastic)
