@@ -8,7 +8,7 @@
 [![release](https://img.shields.io/github/release/slashdevops/go-table/all.svg)](https://github.com/slashdevops/go-table/releases)
 [![Go Reference](https://pkg.go.dev/badge/github.com/slashdevops/go-table.svg)](https://pkg.go.dev/github.com/slashdevops/go-table)
 
-**(go-table)** is a simple `Table` implementation in golang.
+**go-table** is a simple `Table` implementation in golang.
 
 This is focused on `usability and simplicity`.
 
