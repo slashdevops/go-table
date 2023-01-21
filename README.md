@@ -12,6 +12,8 @@
 
 This is focused on `usability and simplicity`.
 
+**NOTE:** This project is using source code copied from [golang/go](https://github.com/golang/go/tree/master/src/encoding/json) respecting the [BSD-3-Clause license](https://opensource.org/licenses/BSD-3-Clause)
+
 ## Overview
 
 Taking advantage of the [text/tabwriter](https://pkg.go.dev/text/tabwriter) package, this library provides a simple way to create and manage tables.
@@ -129,3 +131,24 @@ Jack,40,Paris
 go-table is released under the BSD 3-Clause License. See the bundled LICENSE file for details.
 
 * [The 3-Clause BSD License](https://opensource.org/licenses/BSD-3-Clause)
+
+**NOTE:** This project is using source code copied from [golang/go](https://github.com/golang/go/tree/master/src/encoding/json) respecting the [BSD-3-Clause license](https://opensource.org/licenses/BSD-3-Clause) and the files are marked with the following header:
+
+```go
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package json implements encoding and decoding of JSON as defined in
+// RFC 7159. The mapping between JSON and Go values is described
+// in the documentation for the Marshal and Unmarshal functions.
+//
+// See "JSON and Go" for an introduction to this package:
+// https://golang.org/doc/articles/json_and_go.html
+
+// NOTE: This package is a fork of the standard library's encoding/json package.
+// It has been modified to support the Table data structure.
+// source: <https://go.dev/src/encoding/json/> or <https://cs.opensource.google/go/go/+/master:src/encoding/json/>
+```
+
+some of the files are modified to support the `Table` data structure.
