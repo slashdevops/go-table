@@ -136,7 +136,6 @@ func stringEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 		// the first time.
 		e2.string(v.String(), opts.escapeHTML)
 		es.stringBytes(e2.Bytes(), false)
-		encodeStatePool.Put(e2)
 	} else {
 		es.string(v.String(), opts.escapeHTML)
 	}

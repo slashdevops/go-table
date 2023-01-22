@@ -18,23 +18,13 @@ import (
 	"bytes"
 	"io"
 	"reflect"
-	"sync"
 	"unicode/utf8"
 )
 
 const startDetectingCyclesAfter = 1000
 
-var (
-	// We want to keep the GC overhead as little as possible.
-	// Frequent allocation and recycling of memory will cause a heavy burden to GC.
-	// sync.Pool can cache objects that are not used temporarily and use them
-	// directly (without reallocation) when they are needed next time.
-	// This can potentially reduce the GC workload and improve performance.
-	encodeStatePool sync.Pool
-
-	// hex is the mapping from byte values to their lower-case hex digits.
-	hex = "0123456789abcdef"
-)
+// hex is the mapping from byte values to their lower-case hex digits.
+var hex = "0123456789abcdef"
 
 // An encodeState encodes TABLE into a bytes.Buffer.
 type encodeState struct {
@@ -57,17 +47,6 @@ type encodeState struct {
 }
 
 func newEncodeState(out io.Writer, sep string) *encodeState {
-	if v := encodeStatePool.Get(); v != nil {
-		es := v.(*encodeState)
-		es.Reset()
-
-		if len(es.ptrSeen) > 0 {
-			panic("ptrEncoder.encode should have emptied ptrSeen via defers")
-		}
-		es.ptrLevel = 0
-		return es
-	}
-
 	es := &encodeState{
 		t:       New(out, WithSep(sep)),
 		scratch: [64]byte{},
