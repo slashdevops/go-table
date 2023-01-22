@@ -44,8 +44,6 @@ func Marshal(v any, sep ...string) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	es := newEncodeState(buf, s)
 
-	defer encodeStatePool.Put(es)
-
 	err := es.marshal(v, encOpts{sep: s, escapeHTML: true})
 	if err != nil {
 		return nil, err
@@ -54,7 +52,9 @@ func Marshal(v any, sep ...string) ([]byte, error) {
 	es.Flush()
 	es.t.Render()
 
-	return buf.Bytes(), nil
+	out := append([]byte(nil), buf.Bytes()...)
+
+	return out, nil
 }
 
 type encOpts struct {
