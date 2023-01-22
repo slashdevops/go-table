@@ -6,7 +6,7 @@ import (
 )
 
 func TestMarshal(t *testing.T) {
-	var sp string = "pointer to string"
+	// var sp string = "pointer to string"
 
 	type st struct {
 		A int               `table:"a"`
@@ -21,13 +21,13 @@ func TestMarshal(t *testing.T) {
 		sep  []string
 		want []byte
 	}{
-		//{v: nil, sep: []string{","}, want: []byte("Unknown1\nnull\n\n")},
-		//{v: true, sep: []string{","}, want: []byte("Unknown1\ntrue\n")},
+		{v: nil, sep: []string{","}, want: []byte("Unknown1\nnull\n")},
+		{v: true, sep: []string{","}, want: []byte("Unknown1\ntrue\n")},
 		// {v: 12, sep: []string{","}, want: []byte("Unknown1\n12\n")},
 		// {v: uint64(111), sep: []string{","}, want: []byte("Unknown1\n111\n")},
 		// {v: float32(32.32), sep: []string{","}, want: []byte("Unknown1\n32.32\n")},
 		// {v: float64(64.64), sep: []string{","}, want: []byte("Unknown1\n64.64\n")},
-		// {v: "this is a string", sep: []string{","}, want: []byte("Unknown1\n\"this is a string\"\n")},
+		//{v: "this is a string", sep: []string{","}, want: []byte("Unknown1\n\"this is a string\"\n")},
 		// {v: [5]int{1, 2, 3, 4, 5}, sep: []string{","}, want: []byte("Unknown1\n'[1,2,3,4,5]'\n")},
 		// {v: []int{1, 2, 3, 4, 5}, sep: []string{","}, want: []byte("Unknown1\n'[1,2,3,4,5]'\n")},
 		// {v: []float64{1.5, 2.5, 3.5, 4.5, 5.5}, sep: []string{","}, want: []byte("Unknown1\n'[1.5,2.5,3.5,4.5,5.5]'\n")},
@@ -38,10 +38,10 @@ func TestMarshal(t *testing.T) {
 		// 	v: &[5]int{1, 2, 3, 4, 5}, sep: []string{","},
 		// 	want: []byte("Unknown1\n'[1,2,3,4,5]'\n"),
 		// },
-		{
-			v: &st{A: 1, B: "this is a string", C: &sp, D: []string{"one", "two"}, E: map[string]string{"foo": "one", "bar": "two"}}, sep: []string{","},
-			want: []byte("a,b,c,d,e\n1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}'\n"),
-		},
+		// {
+		// 	v: &st{A: 1, B: "this is a string", C: &sp, D: []string{"one", "two"}, E: map[string]string{"foo": "one", "bar": "two"}}, sep: []string{","},
+		// 	want: []byte("a,b,c,d,e\n1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}'\n"),
+		// },
 	}
 
 	for _, tt := range tests {

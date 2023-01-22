@@ -26,7 +26,7 @@ import (
 )
 
 func invalidValueEncoder(es *encodeState, v reflect.Value, _ encOpts) {
-	es.t.AddRow("null")
+	es.WriteString("null")
 }
 
 // isValidNumber reports whether s is a valid JSON number literal.
@@ -116,25 +116,16 @@ func stringEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 		if numStr == "" {
 			numStr = "0" // Number's zero-val
 		}
-
 		if !isValidNumber(numStr) {
 			es.error(fmt.Errorf("json: invalid number literal %q", numStr))
 		}
-
-		buf := new(bytes.Buffer)
-
 		if opts.quoted {
-			buf.WriteByte('"')
+			es.WriteByte('"')
 		}
-
-		buf.WriteString(numStr)
-
+		es.WriteString(numStr)
 		if opts.quoted {
-			buf.WriteByte('"')
+			es.WriteByte('"')
 		}
-
-		es.t.AddRow(buf.String())
-
 		return
 	}
 	if opts.quoted {
@@ -145,9 +136,6 @@ func stringEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 		// the first time.
 		e2.string(v.String(), opts.escapeHTML)
 		es.stringBytes(e2.Bytes(), false)
-
-		es.t.AddRow(buf.String())
-
 		encodeStatePool.Put(e2)
 	} else {
 		es.string(v.String(), opts.escapeHTML)
@@ -179,7 +167,7 @@ type UnsupportedTypeError struct {
 }
 
 func (e *UnsupportedTypeError) Error() string {
-	return "json: unsupported type: " + e.Type.String()
+	return "table: unsupported type: " + e.Type.String()
 }
 
 // An UnsupportedValueError is returned by Marshal when attempting
@@ -190,7 +178,7 @@ type UnsupportedValueError struct {
 }
 
 func (e *UnsupportedValueError) Error() string {
-	return "json: unsupported value: " + e.Str
+	return "table: unsupported value: " + e.Str
 }
 
 // Before Go 1.2, an InvalidUTF8Error was returned by Marshal when
@@ -204,7 +192,7 @@ type InvalidUTF8Error struct {
 }
 
 func (e *InvalidUTF8Error) Error() string {
-	return "json: invalid UTF-8 in string: " + strconv.Quote(e.S)
+	return "table: invalid UTF-8 in string: " + strconv.Quote(e.S)
 }
 
 // A MarshalerError represents an error from calling a MarshalJSON or MarshalText method.
@@ -219,7 +207,7 @@ func (e *MarshalerError) Error() string {
 	if srcFunc == "" {
 		srcFunc = "MarshalJSON"
 	}
-	return "json: error calling " + srcFunc +
+	return "table: error calling " + srcFunc +
 		" for type " + e.Type.String() +
 		": " + e.Err.Error()
 }
@@ -461,7 +449,7 @@ func (me mapEncoder) encode(es *encodeState, v reflect.Value, opts encOpts) {
 		sv[i].k = mi.Key()
 		sv[i].v = mi.Value()
 		if err := sv[i].resolve(); err != nil {
-			es.error(fmt.Errorf("json: encoding error for type %q: %q", v.Type().String(), err.Error()))
+			es.error(fmt.Errorf("table: encoding error for type %q: %q", v.Type().String(), err.Error()))
 		}
 	}
 	sort.Slice(sv, func(i, j int) bool { return sv[i].ks < sv[j].ks })
