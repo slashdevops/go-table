@@ -98,3 +98,27 @@ func TestMarshal(t *testing.T) {
 		})
 	}
 }
+
+// func TestMarshalRecursiveStruct(t *testing.T) {
+// 	type st struct {
+// 		Field1 string `table:"field1"`
+// 		Field3 *st    `table:"field3"`
+// 	}
+
+// 	st1 := st{
+// 		Field3: &st{
+// 			Field1: "field1",
+// 		},
+// 	}
+
+// 	want := []byte("a,b,c,d,e,f.a,f.b,f.c,f.d,f.e\n1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}',1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}'\n")
+
+// 	got, err := Marshal(st1, ",")
+// 	if err != nil {
+// 		t.Errorf("Marshal() error = %v", err)
+// 	}
+
+// 	if !reflect.DeepEqual(got, want) {
+// 		t.Errorf("Marshal() = %+v, want %+v", string(got), string(want))
+// 	}
+// }
