@@ -398,13 +398,31 @@ type structFields struct {
 
 func (se structEncoder) encode(es *encodeState, v reflect.Value, opts encOpts) {
 	headers := make([]string, 0, len(se.fields.list))
+
+FieldLoop:
 	for i := 0; i < len(se.fields.list); i++ {
 		f := se.fields.list[i]
-		if f.omitEmpty && isEmptyValue(v.FieldByIndex(f.index)) {
-			continue
+
+		// find the value for the field by following the index.
+		fv := v
+		for _, i := range f.index {
+			if fv.Kind() == reflect.Pointer {
+				if fv.IsNil() {
+					continue FieldLoop
+				}
+				fv = fv.Elem()
+			}
+			fv = fv.Field(i)
+
+			if f.omitEmpty && isEmptyValue(fv) {
+				continue
+			}
+
 		}
+
 		headers = append(headers, f.name)
 		es.reflectValue(v.FieldByIndex(f.index), opts)
+
 		if i < len(se.fields.list)-1 {
 			es.WriteString(opts.sep)
 		}

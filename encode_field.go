@@ -65,7 +65,7 @@ func (x byIndex) Less(i, j int) bool {
 // The algorithm is deep-first search over the set of structs to include - the top struct
 // and then any reachable anonymous structs.
 func typeFields(t reflect.Type, prefix string) structFields {
-	st := NewStack()
+	st := NewFieldStack()
 	var fields []field
 
 	if t.Kind() == reflect.Ptr {
@@ -156,7 +156,8 @@ func typeFields(t reflect.Type, prefix string) structFields {
 
 			// we don't want to add fields of struct type
 			// as a field of the table, just the fields of the struct
-			if ft.Kind() != reflect.Struct {
+			k := ft.Kind()
+			if name != "" && !f.Anonymous && k != reflect.Struct {
 				field := field{
 					name:      fname,
 					tag:       tagged,
@@ -171,7 +172,7 @@ func typeFields(t reflect.Type, prefix string) structFields {
 				fields = append(fields, field)
 			}
 
-			if ft.Kind() == reflect.Struct {
+			if k == reflect.Struct {
 				typeFields(ft, fn+".")
 			}
 

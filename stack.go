@@ -4,7 +4,7 @@ type stack struct {
 	v []*field
 }
 
-func NewStack() *stack {
+func NewFieldStack() *stack {
 	s := &stack{
 		v: make([]*field, 0),
 	}

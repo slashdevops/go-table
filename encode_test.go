@@ -3,6 +3,9 @@ package table
 import (
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 func TestMarshal(t *testing.T) {
@@ -122,3 +125,88 @@ func TestMarshal(t *testing.T) {
 // 		t.Errorf("Marshal() = %+v, want %+v", string(got), string(want))
 // 	}
 // }
+
+func TestNestedStruct(t *testing.T) {
+	type Link struct {
+		HRef string `json:"href,omitempty" yaml:"href,omitempty" table:"href,omitempty"`
+		Name string `json:"name,omitempty" yaml:"name,omitempty" table:"name,omitempty"`
+	}
+
+	type Object struct {
+		Self         *Link   `json:"self,omitempty" yaml:"self,omitempty" table:"self,omitempty"`
+		HTML         *Link   `json:"html,omitempty" yaml:"html,omitempty" table:"html,omitempty"`
+		Avatar       *Link   `json:"avatar,omitempty" yaml:"avatar,omitempty" table:"avatar,omitempty"`
+		PullRequests *Link   `json:"pullrequests,omitempty" yaml:"pullrequests,omitempty" table:"pullrequests,omitempty"`
+		Commits      *Link   `json:"commits,omitempty" yaml:"commits,omitempty" table:"commits,omitempty"`
+		Forks        *Link   `json:"forks,omitempty" yaml:"forks,omitempty" table:"forks,omitempty"`
+		Watchers     *Link   `json:"watchers,omitempty" yaml:"watchers,omitempty" table:"watchers,omitempty"`
+		Downloads    *Link   `json:"downloads,omitempty" yaml:"downloads,omitempty" table:"downloads,omitempty"`
+		Clone        []*Link `json:"clone,omitempty" yaml:"clone,omitempty" table:"clone,omitempty"`
+		Hooks        *Link   `json:"hooks,omitempty" yaml:"hooks,omitempty" table:"hooks,omitempty"`
+	}
+
+	type AccountLinks struct {
+		Avatar *Link `json:"avatar,omitempty" yaml:"avatar,omitempty" table:"avatar,omitempty"`
+	}
+
+	type Account struct {
+		Links       *AccountLinks `json:"links,omitempty" yaml:"links,omitempty" table:"links,omitempty"`
+		CreatedOn   *time.Time    `json:"created_on,omitempty" yaml:"created_on,omitempty" table:"created_on,omitempty"`
+		DisplayName string        `json:"display_name,omitempty" yaml:"display_name,omitempty" table:"display_name,omitempty"`
+		Username    string        `json:"username,omitempty" yaml:"username,omitempty" table:"username,omitempty"`
+		UUID        *uuid.UUID    `json:"uuid,omitempty" yaml:"uuid,omitempty" table:"uuid,omitempty"`
+	}
+
+	type Project struct {
+		Links                   *Object    `json:"links,omitempty" yaml:"links,omitempty" table:"links,omitempty"`
+		UUID                    *uuid.UUID `json:"uuid,omitempty" yaml:"uuid,omitempty" table:"uuid,omitempty"`
+		Key                     string     `json:"key,omitempty" yaml:"key,omitempty" table:"key,omitempty"`
+		Owner                   *Account   `json:"owner,omitempty" yaml:"owner,omitempty" table:"owner,omitempty"`
+		Name                    string     `json:"name,omitempty" yaml:"name,omitempty" table:"name,omitempty"`
+		Description             string     `json:"description,omitempty" yaml:"description,omitempty" table:"description,omitempty"`
+		IsPrivate               bool       `json:"is_private,omitempty" yaml:"is_private,omitempty" table:"is_private,omitempty"`
+		CreatedOn               *time.Time `json:"created_on,omitempty" yaml:"created_on,omitempty" table:"created_on,omitempty"`
+		UpdatedOn               *time.Time `json:"updated_on,omitempty" yaml:"updated_on,omitempty" table:"updated_on,omitempty"`
+		HasPubliclyVisibleRepos bool       `json:"has_publicly_visible_repos,omitempty" yaml:"has_publicly_visible_repos,omitempty" table:"has_publicly_visible_repos,omitempty"`
+	}
+
+	type Branch struct {
+		MergeStrategies      []string `json:"merge_strategies,omitempty" yaml:"merge_strategies,omitempty" table:"merge_strategies,omitempty"`
+		DefaultMergeStrategy string   `json:"default_merge_strategy,omitempty" yaml:"default_merge_strategy,omitempty" table:"default_merge_strategy,omitempty"`
+	}
+
+	type Repository struct {
+		Links *Object `json:"links,omitempty" yaml:"links,omitempty" table:"links,omitempty"`
+	}
+
+	r := Repository{
+		Links: &Object{
+			Self: &Link{
+				HRef: "https://api.bitbucket.org/2.0/repositories/username/repo",
+			},
+			HTML: &Link{
+				HRef: "https://bitbucket.org/username/repo",
+			},
+			Avatar: &Link{
+				HRef: "https://bitbucket.org/username/repo/avatar/32/",
+			},
+			Clone: []*Link{
+				{
+					HRef: "https://bitbucket.org/username/repo.git",
+					Name: "https",
+				},
+			},
+		},
+	}
+
+	want := []byte("a,b,c,d,e,f.a,f.b,f.c,f.d,f.e\n1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}',1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}'\n")
+
+	got, err := Marshal(r, ",")
+	if err != nil {
+		t.Errorf("Marshal() error = %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Marshal() = %+v, want %+v", string(got), string(want))
+	}
+}

@@ -115,3 +115,87 @@ func Test_typeFields(t *testing.T) {
 		})
 	}
 }
+
+func Test_typeFieldTwo(t *testing.T) {
+	type Link struct {
+		HRef string `table:"href,omitempty"`
+		Name string `table:"name,omitempty"`
+	}
+
+	type Object struct {
+		Self  *Link `table:"self,omitempty"`
+		Hooks *Link `table:"hooks,omitempty"`
+	}
+
+	type Repository struct {
+		Links *Object `table:"links,omitempty"`
+	}
+
+	r := Repository{
+		Links: &Object{
+			Self: &Link{
+				HRef: "https://api.bitbucket.org/2.0/repositories/username/repo",
+			},
+			Hooks: &Link{
+				HRef: "https://api.bitbucket.org/2.0/repositories/username/repo/hooks",
+				Name: "hooks",
+			},
+		},
+	}
+
+	fields := []field{
+		{
+			name:      "links.self.href",
+			nameBytes: []byte("links.self.href"),
+			index:     []int{0, 0, 0},
+			tag:       true,
+			typ:       reflect.TypeOf("string"),
+			omitEmpty: true,
+			quoted:    false,
+			encoder:   typeEncoder(reflect.TypeOf("string")),
+		},
+		{
+			name:      "links.self.name",
+			nameBytes: []byte("links.self.name"),
+			index:     []int{0, 0, 1},
+			tag:       true,
+			typ:       reflect.TypeOf("string"),
+			omitEmpty: true,
+			quoted:    false,
+			encoder:   typeEncoder(reflect.TypeOf("string")),
+		},
+		{
+			name:      "links.hooks.href",
+			nameBytes: []byte("links.hooks.href"),
+			index:     []int{0, 1, 0},
+			tag:       true,
+			typ:       reflect.TypeOf("string"),
+			omitEmpty: true,
+			quoted:    false,
+			encoder:   typeEncoder(reflect.TypeOf("string")),
+		},
+		{
+			name:      "links.hooks.name",
+			nameBytes: []byte("links.hooks.name"),
+			index:     []int{0, 1, 1},
+			tag:       true,
+			typ:       reflect.TypeOf("string"),
+			omitEmpty: true,
+			quoted:    false,
+			encoder:   typeEncoder(reflect.TypeOf("string")),
+		},
+	}
+
+	want := structFields{
+		list: fields,
+		nameIndex: map[string]int{
+			"links.self.href": 0, "links.self.name": 1, "links.hooks.href": 2, "links.hooks.name": 3,
+		},
+	}
+
+	got := typeFields(reflect.ValueOf(r).Type(), "")
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("typeFields() = %+v, want %+v", got, want)
+	}
+}

@@ -6,7 +6,7 @@ import (
 )
 
 func TestStack(t *testing.T) {
-	s := NewStack()
+	s := NewFieldStack()
 
 	want := &stack{
 		v: make([]*field, 0),
