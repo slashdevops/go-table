@@ -117,7 +117,7 @@ func stringEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 			numStr = "0" // Number's zero-val
 		}
 		if !isValidNumber(numStr) {
-			es.error(fmt.Errorf("json: invalid number literal %q", numStr))
+			es.error(fmt.Errorf("table: invalid number literal %q", numStr))
 		}
 		if opts.quoted {
 			es.WriteByte('"')
@@ -141,7 +141,7 @@ func stringEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 	}
 }
 
-// A Number represents a JSON number literal.
+// A Number represents a TABLE number literal.
 type Number string
 
 // String returns the literal text of the number.
@@ -194,7 +194,7 @@ func (e *InvalidUTF8Error) Error() string {
 	return "table: invalid UTF-8 in string: " + strconv.Quote(e.S)
 }
 
-// A MarshalerError represents an error from calling a MarshalJSON or MarshalText method.
+// A MarshalerError represents an error from calling a MarshalTable or MarshalText method.
 type MarshalerError struct {
 	Type       reflect.Type
 	Err        error
@@ -204,7 +204,7 @@ type MarshalerError struct {
 func (e *MarshalerError) Error() string {
 	srcFunc := e.sourceFunc
 	if srcFunc == "" {
-		srcFunc = "MarshalJSON"
+		srcFunc = "MarshalTable"
 	}
 	return "table: error calling " + srcFunc +
 		" for type " + e.Type.String() +
@@ -223,7 +223,7 @@ func (bits floatEncoder) encode(es *encodeState, v reflect.Value, opts encOpts) 
 	}
 
 	// Convert as if by ES6 number to string conversion.
-	// This matches most other JSON generators.
+	// This matches most other Table generators.
 	// See golang.org/issue/6384 and golang.org/issue/14135.
 	// Like fmt %g, but the exponent cutoffs are different
 	// and exponents themselves are not padded to two digits.
@@ -275,11 +275,11 @@ func marshalerEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 	b, err := m.MarshalTable()
 	_ = b
 	// if err == nil {
-	// 	// copy JSON into buffer, checking validity.
+	// 	// copy Table into buffer, checking validity.
 	// 	err = compact(&e.Buffer, b, opts.escapeHTML)
 	// }
 	if err != nil {
-		es.error(&MarshalerError{v.Type(), err, "MarshalJSON"})
+		es.error(&MarshalerError{v.Type(), err, "MarshalTable"})
 	}
 }
 
@@ -296,7 +296,7 @@ func addrMarshalerEncoder(es *encodeState, v reflect.Value, opts encOpts) {
 	// 	err = compact(&e.Buffer, b, opts.escapeHTML)
 	// }
 	if err != nil {
-		es.error(&MarshalerError{v.Type(), err, "MarshalJSON"})
+		es.error(&MarshalerError{v.Type(), err, "MarshalTable"})
 	}
 }
 
@@ -397,10 +397,11 @@ type structFields struct {
 }
 
 func (se structEncoder) encode(es *encodeState, v reflect.Value, opts encOpts) {
-	headers := make([]string, 0, len(se.fields.list))
+	ls := len(se.fields.list)
+	headers := make([]string, 0, ls)
 
 FieldLoop:
-	for i := 0; i < len(se.fields.list); i++ {
+	for i := 0; i < ls; i++ {
 		f := se.fields.list[i]
 
 		// find the value for the field by following the index.
@@ -413,20 +414,23 @@ FieldLoop:
 				fv = fv.Elem()
 			}
 			fv = fv.Field(i)
+		}
 
-			if f.omitEmpty && isEmptyValue(fv) {
-				continue
-			}
-
+		if f.omitEmpty && isEmptyValue(fv) {
+			continue
 		}
 
 		headers = append(headers, f.name)
-		es.reflectValue(v.FieldByIndex(f.index), opts)
 
-		if i < len(se.fields.list)-1 {
+		// write a separator if needed after the first element
+		if i > 0 && i < ls {
 			es.WriteString(opts.sep)
 		}
+
+		// write the field value
+		es.reflectValue(v.FieldByIndex(f.index), opts)
 	}
+
 	es.t.SetHeader(headers)
 }
 

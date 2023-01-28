@@ -3,9 +3,9 @@ package table
 import (
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestMarshal(t *testing.T) {
@@ -102,29 +102,37 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
-// func TestMarshalRecursiveStruct(t *testing.T) {
-// 	type st struct {
-// 		Field1 string `table:"field1"`
-// 		Field3 *st    `table:"field3"`
-// 	}
+func TestEmptyField(t *testing.T) {
+	type Example struct {
+		Name string `table:"name,omitempty"`
+		Age  int    `table:"age,omitempty"`
+	}
 
-// 	st1 := st{
-// 		Field3: &st{
-// 			Field1: "field1",
-// 		},
-// 	}
+	given := Example{
+		Name: "John",
+	}
 
-// 	want := []byte("a,b,c,d,e,f.a,f.b,f.c,f.d,f.e\n1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}',1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}'\n")
+	want := []byte("name\n\"John\"\n")
 
-// 	got, err := Marshal(st1, ",")
-// 	if err != nil {
-// 		t.Errorf("Marshal() error = %v", err)
-// 	}
+	got, err := Marshal(given, ",")
+	if err != nil {
+		t.Errorf("Marshal() error = %v", err)
+	}
 
-// 	if !reflect.DeepEqual(got, want) {
-// 		t.Errorf("Marshal() = %+v, want %+v", string(got), string(want))
-// 	}
-// }
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Marshal() = %v, want %v", string(got), string(want))
+	}
+	// opts := []cmp.Option{
+	// 	cmp.AllowUnexported(structFields{}),
+	// 	cmp.AllowUnexported(field{}),
+	// 	cmpopts.IgnoreFields(field{}, "typ"),
+	// 	cmpopts.IgnoreFields(field{}, "encoder"),
+	// }
+
+	// if diff := cmp.Diff(want, got, opts...); diff != "" {
+	// 	t.Errorf("typeFields() mismatch (-want +got):\n%s", diff)
+	// }
+}
 
 func TestNestedStruct(t *testing.T) {
 	type Link struct {
@@ -133,46 +141,10 @@ func TestNestedStruct(t *testing.T) {
 	}
 
 	type Object struct {
-		Self         *Link   `json:"self,omitempty" yaml:"self,omitempty" table:"self,omitempty"`
-		HTML         *Link   `json:"html,omitempty" yaml:"html,omitempty" table:"html,omitempty"`
-		Avatar       *Link   `json:"avatar,omitempty" yaml:"avatar,omitempty" table:"avatar,omitempty"`
-		PullRequests *Link   `json:"pullrequests,omitempty" yaml:"pullrequests,omitempty" table:"pullrequests,omitempty"`
-		Commits      *Link   `json:"commits,omitempty" yaml:"commits,omitempty" table:"commits,omitempty"`
-		Forks        *Link   `json:"forks,omitempty" yaml:"forks,omitempty" table:"forks,omitempty"`
-		Watchers     *Link   `json:"watchers,omitempty" yaml:"watchers,omitempty" table:"watchers,omitempty"`
-		Downloads    *Link   `json:"downloads,omitempty" yaml:"downloads,omitempty" table:"downloads,omitempty"`
-		Clone        []*Link `json:"clone,omitempty" yaml:"clone,omitempty" table:"clone,omitempty"`
-		Hooks        *Link   `json:"hooks,omitempty" yaml:"hooks,omitempty" table:"hooks,omitempty"`
-	}
-
-	type AccountLinks struct {
-		Avatar *Link `json:"avatar,omitempty" yaml:"avatar,omitempty" table:"avatar,omitempty"`
-	}
-
-	type Account struct {
-		Links       *AccountLinks `json:"links,omitempty" yaml:"links,omitempty" table:"links,omitempty"`
-		CreatedOn   *time.Time    `json:"created_on,omitempty" yaml:"created_on,omitempty" table:"created_on,omitempty"`
-		DisplayName string        `json:"display_name,omitempty" yaml:"display_name,omitempty" table:"display_name,omitempty"`
-		Username    string        `json:"username,omitempty" yaml:"username,omitempty" table:"username,omitempty"`
-		UUID        *uuid.UUID    `json:"uuid,omitempty" yaml:"uuid,omitempty" table:"uuid,omitempty"`
-	}
-
-	type Project struct {
-		Links                   *Object    `json:"links,omitempty" yaml:"links,omitempty" table:"links,omitempty"`
-		UUID                    *uuid.UUID `json:"uuid,omitempty" yaml:"uuid,omitempty" table:"uuid,omitempty"`
-		Key                     string     `json:"key,omitempty" yaml:"key,omitempty" table:"key,omitempty"`
-		Owner                   *Account   `json:"owner,omitempty" yaml:"owner,omitempty" table:"owner,omitempty"`
-		Name                    string     `json:"name,omitempty" yaml:"name,omitempty" table:"name,omitempty"`
-		Description             string     `json:"description,omitempty" yaml:"description,omitempty" table:"description,omitempty"`
-		IsPrivate               bool       `json:"is_private,omitempty" yaml:"is_private,omitempty" table:"is_private,omitempty"`
-		CreatedOn               *time.Time `json:"created_on,omitempty" yaml:"created_on,omitempty" table:"created_on,omitempty"`
-		UpdatedOn               *time.Time `json:"updated_on,omitempty" yaml:"updated_on,omitempty" table:"updated_on,omitempty"`
-		HasPubliclyVisibleRepos bool       `json:"has_publicly_visible_repos,omitempty" yaml:"has_publicly_visible_repos,omitempty" table:"has_publicly_visible_repos,omitempty"`
-	}
-
-	type Branch struct {
-		MergeStrategies      []string `json:"merge_strategies,omitempty" yaml:"merge_strategies,omitempty" table:"merge_strategies,omitempty"`
-		DefaultMergeStrategy string   `json:"default_merge_strategy,omitempty" yaml:"default_merge_strategy,omitempty" table:"default_merge_strategy,omitempty"`
+		Self   *Link   `json:"self,omitempty" yaml:"self,omitempty" table:"self,omitempty"`
+		HTML   *Link   `json:"html,omitempty" yaml:"html,omitempty" table:"html,omitempty"`
+		Avatar *Link   `json:"avatar,omitempty" yaml:"avatar,omitempty" table:"avatar,omitempty"`
+		Clone  []*Link `json:"clone,omitempty" yaml:"clone,omitempty" table:"clone,omitempty"`
 	}
 
 	type Repository struct {
@@ -182,31 +154,32 @@ func TestNestedStruct(t *testing.T) {
 	r := Repository{
 		Links: &Object{
 			Self: &Link{
-				HRef: "https://api.bitbucket.org/2.0/repositories/username/repo",
+				HRef: "https://self.com",
 			},
 			HTML: &Link{
-				HRef: "https://bitbucket.org/username/repo",
+				HRef: "https://html.com",
 			},
 			Avatar: &Link{
-				HRef: "https://bitbucket.org/username/repo/avatar/32/",
-			},
-			Clone: []*Link{
-				{
-					HRef: "https://bitbucket.org/username/repo.git",
-					Name: "https",
-				},
+				HRef: "https://avatart.com",
 			},
 		},
 	}
 
-	want := []byte("a,b,c,d,e,f.a,f.b,f.c,f.d,f.e\n1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}',1,\"this is a string\",\"pointer to string\",'[\"one\",\"two\"]','{\"bar\":\"two\",\"foo\":\"one\"}'\n")
+	want := []byte("links.self.href,links.html.href,links.avatar.href\n\"https://self.com\",\"https://html.com\",\"https://avatart.com\"\n")
 
 	got, err := Marshal(r, ",")
 	if err != nil {
 		t.Errorf("Marshal() error = %v", err)
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Marshal() = %+v, want %+v", string(got), string(want))
+	opts := []cmp.Option{
+		cmp.AllowUnexported(structFields{}),
+		cmp.AllowUnexported(field{}),
+		cmpopts.IgnoreFields(field{}, "typ"),
+		cmpopts.IgnoreFields(field{}, "encoder"),
+	}
+
+	if diff := cmp.Diff(want, got, opts...); diff != "" {
+		t.Errorf("typeFields() mismatch (-want +got):\n%s", diff)
 	}
 }

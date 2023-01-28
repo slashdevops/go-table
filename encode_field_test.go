@@ -3,117 +3,62 @@ package table
 import (
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func Test_typeFields(t *testing.T) {
-	t.Skip("Skipping testing because deepEqual is not working for this test.")
-
-	type sc struct {
-		ScField1 string `table:"scField1"`
+	type Example struct {
+		Name  string `table:"name,omitempty"`
+		Count int    `table:"count,omitempty"`
 	}
 
-	type sb struct {
-		SbField1 sc `table:"sbField1"`
+	given := Example{
+		Name:  "John",
+		Count: 1,
 	}
 
-	type sa struct {
-		SaField1 string  `table:"saField1"`
-		SaField2 int     `table:"saField2"`
-		SaField3 sb      `table:"saField3"`
-		SaField4 float32 `table:"saField4"`
-		SaField5 sc      `table:"saField5"`
-	}
-
-	s := sa{
-		SaField1: "value of field1",
-		SaField2: 1,
-		SaField3: sb{
-			SbField1: sc{
-				ScField1: "value of field4",
+	want := structFields{
+		list: []field{
+			{
+				name:      "name",
+				nameBytes: []byte("name"),
+				index:     []int{0},
+				tag:       true,
+				typ:       reflect.TypeOf("string"),
+				omitEmpty: true,
+				quoted:    false,
+				encoder:   typeEncoder(reflect.TypeOf("string")),
+			},
+			{
+				name:      "count",
+				nameBytes: []byte("count"),
+				index:     []int{1},
+				tag:       true,
+				typ:       reflect.TypeOf(int(1)),
+				omitEmpty: true,
+				quoted:    false,
+				encoder:   typeEncoder(reflect.TypeOf(int(1))),
 			},
 		},
-		SaField4: 1.1,
-		SaField5: sc{
-			ScField1: "value of field5",
-		},
+		nameIndex: map[string]int{"name": 0, "count": 1},
 	}
 
-	tests := []struct {
-		name string
-		t    reflect.Type
-		want structFields
-	}{
-		{
-			name: "test",
-			t:    reflect.TypeOf(s),
-			want: structFields{
-				list: []field{
-					{
-						name:      "saField1",
-						nameBytes: []byte("saField1"),
-						index:     []int{0},
-						tag:       true,
-						typ:       reflect.TypeOf("string"),
-						omitEmpty: false,
-						quoted:    false,
-						encoder:   typeEncoder(reflect.TypeOf("string")),
-					},
-					{
-						name:      "saField2",
-						nameBytes: []byte("saField2"),
-						index:     []int{1},
-						tag:       true,
-						typ:       reflect.TypeOf(int(1)),
-						omitEmpty: false,
-						quoted:    false,
-						encoder:   typeEncoder(reflect.TypeOf(int(1))),
-					},
-					{
-						name:      "saField3.sbField1.scField1",
-						nameBytes: []byte("saField3.sbField1.scField1"),
-						index:     []int{2, 0, 0},
-						tag:       true,
-						typ:       reflect.TypeOf("string"),
-						omitEmpty: false,
-						quoted:    false,
-						encoder:   typeEncoder(reflect.TypeOf("string")),
-					},
-					{
-						name:      "saField4",
-						nameBytes: []byte("saField4"),
-						index:     []int{3},
-						tag:       true,
-						typ:       reflect.TypeOf(float32(1.1)),
-						omitEmpty: false,
-						quoted:    false,
-						encoder:   typeEncoder(reflect.TypeOf(float32(1.1))),
-					},
-					{
-						name:      "saField5.scField1",
-						nameBytes: []byte("saField5.scField1"),
-						index:     []int{4, 0},
-						tag:       true,
-						typ:       reflect.TypeOf("string"),
-						omitEmpty: false,
-						quoted:    false,
-						encoder:   typeEncoder(reflect.TypeOf("string")),
-					},
-				},
-				nameIndex: map[string]int{
-					"saField1": 0, "saField2": 1, "saField3.sbField1.scField1": 2, "saField4": 3, "saField5.scField1": 4,
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := typeFields(tt.t, "")
+	t.Run("no pointers", func(t *testing.T) {
+		got := typeFields(reflect.TypeOf(given), "")
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("typeFields() = %+v, want %+v", got, tt.want)
-			}
-		})
-	}
+		opts := []cmp.Option{
+			cmp.AllowUnexported(structFields{}),
+			cmp.AllowUnexported(field{}),
+			cmpopts.IgnoreFields(field{}, "typ"),
+			cmpopts.IgnoreFields(field{}, "encoder"),
+		}
+
+		if diff := cmp.Diff(want, got, opts...); diff != "" {
+			t.Errorf("typeFields() mismatch (-want +got):\n%s", diff)
+		}
+	})
 }
 
 func Test_typeFieldTwo(t *testing.T) {
@@ -195,7 +140,14 @@ func Test_typeFieldTwo(t *testing.T) {
 
 	got := typeFields(reflect.ValueOf(r).Type(), "")
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("typeFields() = %+v, want %+v", got, want)
+	opts := []cmp.Option{
+		cmp.AllowUnexported(structFields{}),
+		cmp.AllowUnexported(field{}),
+		cmpopts.IgnoreFields(field{}, "typ"),
+		cmpopts.IgnoreFields(field{}, "encoder"),
+	}
+
+	if diff := cmp.Diff(want, got, opts...); diff != "" {
+		t.Errorf("typeFields() mismatch (-want +got):\n%s", diff)
 	}
 }
