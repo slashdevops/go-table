@@ -235,7 +235,7 @@ func typeFields(t reflect.Type, prefix string) structFields {
 	for i, field := range fields {
 		nameIndex[field.name] = i
 	}
-	return structFields{fields, nameIndex}
+	return structFields{list: fields, nameIndex: nameIndex}
 }
 
 // dominantField looks through the fields, all of which are known to

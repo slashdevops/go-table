@@ -35,16 +35,21 @@ var (
 // Marshal returns the table encoding of v.
 // sep is optional and defaults to "\t".  This is the separator used
 // between fields.  If sep is empty, the default is used.
-func Marshal(v any, sep ...string) ([]byte, error) {
-	s := "\t"
-	if len(sep) >= 0 {
-		s = sep[0]
+func Marshal(v any, opts ...MarshalOption) ([]byte, error) {
+	o := marshalOptions{
+		sep:          "\t",
+		flattenArray: false,
+		flattenMap:   false,
+	}
+
+	for _, opt := range opts {
+		opt(&o)
 	}
 
 	buf := new(bytes.Buffer)
-	es := newEncodeState(buf, s)
+	es := newEncodeState(buf, o.sep)
 
-	err := es.marshal(v, encOpts{sep: s, escapeHTML: true})
+	err := es.marshal(v, encOpts{sep: o.sep, flattenArray: o.flattenArray, flattenMap: o.flattenMap, escapeHTML: true})
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +65,15 @@ func Marshal(v any, sep ...string) ([]byte, error) {
 type encOpts struct {
 	// sep is the separator between fields.
 	sep string
+
+	// flatten arrays and slices
+	flattenArray bool
+
+	// prefix
+	prefix string
+
+	// flatten maps
+	flattenMap bool
 
 	// quoted causes primitive fields to be encoded inside Table strings.
 	quoted bool

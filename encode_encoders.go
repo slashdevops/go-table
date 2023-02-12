@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 func invalidValueEncoder(es *encodeState, v reflect.Value, _ encOpts) {
@@ -403,6 +404,7 @@ func (se structEncoder) encode(es *encodeState, v reflect.Value, opts encOpts) {
 FieldLoop:
 	for i := 0; i < ls; i++ {
 		f := se.fields.list[i]
+		fieldNames := make([]string, 0, ls)
 
 		// find the value for the field by following the index.
 		fv := v
@@ -414,13 +416,25 @@ FieldLoop:
 				fv = fv.Elem()
 			}
 			fv = fv.Field(i)
+
+			// for flattening arrays, we add the index to the field name
+			// if opts.flattenArray && fv.Kind() == reflect.Slice {
+			if opts.flattenArray {
+				opts.prefix += f.name + "."
+				fieldNames = flattenFieldsName(opts.prefix, fv)
+			} else {
+				if !f.omitEmpty || !isEmptyValue(fv) {
+					fieldNames = append(fieldNames, f.name)
+				}
+			}
+
+			headers = append(headers, fieldNames...)
+			es.t.SetHeader(headers)
 		}
 
 		if f.omitEmpty && isEmptyValue(fv) {
 			continue
 		}
-
-		headers = append(headers, f.name)
 
 		// write a separator if needed after the first element
 		if i > 0 && i < ls {
@@ -430,13 +444,31 @@ FieldLoop:
 		// write the field value
 		es.reflectValue(v.FieldByIndex(f.index), opts)
 	}
-
-	es.t.SetHeader(headers)
 }
 
 func newStructEncoder(t reflect.Type) encoderFunc {
 	se := structEncoder{fields: cachedTypeFields(t)}
 	return se.encode
+}
+
+func flattenFieldsName(prefix string, fv reflect.Value) []string {
+	flattenFields := make([]string, 0, fv.Len())
+
+	for i := 0; i < fv.Len(); i++ {
+		if fv.Index(i).Kind() == reflect.Ptr {
+			if fv.Index(i).IsNil() {
+				continue
+			}
+			fv = fv.Index(i).Elem()
+		}
+
+		// remove the last dot if exists
+		prefix = strings.TrimSuffix(prefix, ".")
+
+		flattenFields = append(flattenFields, fmt.Sprintf("%s[%d]", prefix, i))
+	}
+
+	return flattenFields
 }
 
 type mapEncoder struct {
@@ -580,17 +612,33 @@ type arrayEncoder struct {
 }
 
 func (ae arrayEncoder) encode(es *encodeState, v reflect.Value, opts encOpts) {
-	es.WriteByte('\'')
-	es.WriteByte('[')
+	if !opts.flattenArray {
+		es.WriteByte('\'')
+		es.WriteByte('[')
+	}
+
 	n := v.Len()
 	for i := 0; i < n; i++ {
 		if i > 0 {
-			es.WriteByte(',')
+			if opts.flattenArray {
+				if v.Index(i).Kind() != reflect.Struct {
+					es.WriteString(opts.sep)
+				}
+			} else {
+				es.WriteByte(',')
+			}
 		}
 		ae.elemEnc(es, v.Index(i), opts)
+
+		if opts.flattenArray && i == n-1 && v.Index(i).Kind() != reflect.Struct {
+			es.WriteByte('\n')
+		}
 	}
-	es.WriteByte(']')
-	es.WriteByte('\'')
+
+	if !opts.flattenArray {
+		es.WriteByte(']')
+		es.WriteByte('\'')
+	}
 }
 
 func newArrayEncoder(t reflect.Type) encoderFunc {
