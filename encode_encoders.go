@@ -430,19 +430,19 @@ FieldLoop:
 
 			headers = append(headers, fieldNames...)
 			es.t.SetHeader(headers)
-		}
 
-		if f.omitEmpty && isEmptyValue(fv) {
-			continue
-		}
+			if f.omitEmpty && isEmptyValue(fv) {
+				continue
+			}
 
-		// write a separator if needed after the first element
-		if i > 0 && i < ls {
-			es.WriteString(opts.sep)
-		}
+			// write a separator if needed after the first element
+			if i > 0 && i < ls {
+				es.WriteString(opts.sep)
+			}
 
-		// write the field value
-		es.reflectValue(v.FieldByIndex(f.index), opts)
+			// write the field value
+			es.reflectValue(v.FieldByIndex(f.index), opts)
+		}
 	}
 }
 
