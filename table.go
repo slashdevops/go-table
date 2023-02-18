@@ -47,7 +47,7 @@ var carriageReturn string = "\n"
 // Table is a simple abstraction for tex/tabwriter golang package
 type Table struct {
 	tw     *tabwriter.Writer
-	rows   [][]string
+	rows   [][]any
 	header []string
 	sep    string
 }
@@ -72,7 +72,7 @@ func New(output io.Writer, opts ...TableOption) *Table {
 
 	return &Table{
 		tw:     tabwriter.NewWriter(output, o.minWidth, o.tabWidth, o.padding, o.padChar, o.flags),
-		rows:   make([][]string, 0),
+		rows:   make([][]any, 0),
 		header: make([]string, 0),
 		sep:    o.sep,
 	}
@@ -84,35 +84,44 @@ func (t *Table) SetHeader(header []string) {
 }
 
 // AddRow adds a row to the table
-func (t *Table) AddRow(row ...string) {
+func (t *Table) AddRow(row ...any) {
 	t.rows = append(t.rows, row)
 }
 
 // AddRowf adds a row to the table using a format string
 func (t *Table) AddRowf(format string, a ...any) {
-	t.rows = append(t.rows, []string{fmt.Sprintf(format, a...)})
+	t.rows = append(t.rows, []any{fmt.Sprintf(format, a...)})
 }
 
 // AddRows adds multiple rows to the table, matrix style
-func (t *Table) AddRows(rows [][]string) {
+func (t *Table) AddRows(rows [][]any) {
 	t.rows = append(t.rows, rows...)
 }
 
 // AddRowsf adds multiple rows to the table, matrix style, using a format string
 func (t *Table) AddRowsf(format string, a ...any) {
 	for _, v := range a {
-		t.rows = append(t.rows, []string{fmt.Sprintf(format, v)})
+		t.rows = append(t.rows, []any{fmt.Sprintf(format, v)})
 	}
 }
 
 // headerRow returns the header row
 func (t *Table) headerRow() string {
-	return row(t.sep, t.header...)
+	headers := make([]any, len(t.header))
+	for i, v := range t.header {
+		headers[i] = fmt.Sprintf("%v", v)
+	}
+	return fmt.Sprint(row(t.sep, headers...))
 }
 
 // row returns a row
-func row(sep string, row ...string) string {
-	return strings.Join(row, sep) + carriageReturn
+func row(sep string, row ...any) any {
+	rows := make([]string, len(row))
+	for i, v := range row {
+		rows[i] = fmt.Sprintf("%v", v)
+	}
+
+	return strings.Join(rows, sep) + carriageReturn
 }
 
 // Render renders the table into the output
@@ -133,9 +142,14 @@ func (t *Table) Render() error {
 			}
 		}
 
-		if _, err := t.tw.Write([]byte(row(t.sep, r...))); err != nil {
+		val := fmt.Sprintf("%v", row(t.sep, r...))
+
+		if _, err := t.tw.Write([]byte(val)); err != nil {
 			return err
 		}
+		// if _, err := t.tw.Write([]byte(row(t.sep, r...))); err != nil {
+		// 	return err
+		// }
 	}
 
 	return t.tw.Flush()
