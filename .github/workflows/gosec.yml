@@ -36,6 +36,7 @@ jobs:
         id: goroot
         run: |
           echo "GOROOT=$(go env GOROOT)" >> $GITHUB_ENV
+          echo "PATH=$PATH:$(go env GOPATH)" >> $GITHUB_ENV
 
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
