@@ -38,6 +38,6 @@ jobs:
       - name: Run Gosec Security Scanner
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          export GOPATH=$(go env GOPATH)
+          export GOROOT=$(go env GOROOT)
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           gosec -conf .gosec.json ./...
