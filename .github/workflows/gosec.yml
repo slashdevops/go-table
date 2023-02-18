@@ -17,8 +17,6 @@ env:
 jobs:
   security:
     runs-on: ubuntu-latest
-    env:
-      GOROOT: $(go env GOROOT)
     steps:
       - name: Set up Go 1.x
         id: go
@@ -32,10 +30,6 @@ jobs:
       - name: Show project files after make
         run: tree .
 
-      # - name: Set Go environment variables
-      #   run: |
-      #     echo "GOROOT=$(go env GOROOT)" >> $GITHUB_ENV
-
       # - name: Run Gosec Security Scanner
       #   uses: securego/gosec@master
       #   with:
@@ -44,6 +38,5 @@ jobs:
       - name: Run Gosec Security Scanner
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          export GOPATH=$(go env GOPATH)
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           gosec -conf .gosec.json ./...
