@@ -15,7 +15,7 @@ env:
   GO_VERSION: 1.20
 
 jobs:
-  tests:
+  security:
     runs-on: ubuntu-latest
     env:
       GOROOT: $(go env GOROOT)
@@ -32,12 +32,17 @@ jobs:
       - name: Show project files after make
         run: tree .
 
-      - name: Set Go environment variables
-        id: goroot
-        run: |
-          echo "GOROOT=$(go env GOROOT)" >> $GITHUB_ENV
       - name: Run Gosec Security Scanner
-        run: |
-          export PATH=$PATH:$(go env GOPATH)/bin
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -conf .gosec.json ./...
+        uses: securego/gosec@master
+        with:
+          args: ./...
+      # - name: Set Go environment variables
+      #   id: goroot
+      #   run: |
+      #     echo "GOROOT=$(go env GOROOT)" >> $GITHUB_ENV
+
+      # - name: Run Gosec Security Scanner
+      #   run: |
+      #     export PATH=$PATH:$(go env GOPATH)/bin
+      #     go install github.com/securego/gosec/v2/cmd/gosec@latest
+      #     gosec -conf .gosec.json ./...
