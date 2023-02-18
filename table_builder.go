@@ -28,25 +28,25 @@ func (t *tableBuilderChoice) WithHeader(header []string) *tableBuilderChoice {
 }
 
 // WithRow adds a row to the table
-func (t *tableBuilderChoice) WithRow(row ...string) *tableBuilderChoice {
+func (t *tableBuilderChoice) WithRow(row ...any) *tableBuilderChoice {
 	t.t.AddRow(row...)
 	return t
 }
 
 // WithRowf adds a row to the table using a format string
-func (t *tableBuilderChoice) WithRowf(format string, a ...interface{}) *tableBuilderChoice {
+func (t *tableBuilderChoice) WithRowf(format string, a ...any) *tableBuilderChoice {
 	t.t.AddRowf(format, a...)
 	return t
 }
 
 // WithRows adds multiple rows to the table, matrix style
-func (t *tableBuilderChoice) WithRows(rows [][]string) *tableBuilderChoice {
+func (t *tableBuilderChoice) WithRows(rows [][]any) *tableBuilderChoice {
 	t.t.AddRows(rows)
 	return t
 }
 
 // WithRowsf adds multiple rows to the table, matrix style, using a format string
-func (t *tableBuilderChoice) WithRowsf(format string, a ...interface{}) *tableBuilderChoice {
+func (t *tableBuilderChoice) WithRowsf(format string, a ...any) *tableBuilderChoice {
 	t.t.AddRowsf(format, a...)
 	return t
 }

@@ -23,7 +23,7 @@ func TestNew(t *testing.T) {
 			opts:   []TableOption{},
 			want: &Table{
 				tw:     tabwriter.NewWriter(&bytes.Buffer{}, 0, 0, 2, ' ', 0),
-				rows:   make([][]string, 0),
+				rows:   make([][]any, 0),
 				header: make([]string, 0),
 				sep:    "\t",
 			},
@@ -42,7 +42,7 @@ func TestNew(t *testing.T) {
 			},
 			want: &Table{
 				tw:     tabwriter.NewWriter(&bytes.Buffer{}, 10, 10, 10, '|', AlignRight|Debug),
-				rows:   make([][]string, 0),
+				rows:   make([][]any, 0),
 				header: make([]string, 0),
 				sep:    "\t",
 			},
@@ -70,9 +70,9 @@ func ExampleNew() {
 	buf := new(bytes.Buffer)
 	t := New(buf)
 	t.SetHeader([]string{"Name", "Age", "City"})
-	t.AddRow([]string{"John", "30", "New York"}...)
-	t.AddRow([]string{"Jane", "20", "London"}...)
-	t.AddRow([]string{"Jack", "40", "Paris"}...)
+	t.AddRow([]any{"John", "30", "New York"}...)
+	t.AddRow([]any{"Jane", "20", "London"}...)
+	t.AddRow([]any{"Jack", "40", "Paris"}...)
 	t.Render()
 
 	fmt.Println(buf.String())
@@ -96,9 +96,9 @@ func ExampleNew_withOptions() {
 		WithSep("\t"),
 	)
 	t.SetHeader([]string{"Name", "Age", "City"})
-	t.AddRow([]string{"John", "30", "New York"}...)
-	t.AddRow([]string{"Jane", "20", "London"}...)
-	t.AddRow([]string{"Jack", "40", "Paris"}...)
+	t.AddRow([]any{"John", "30", "New York"}...)
+	t.AddRow([]any{"Jane", "20", "London"}...)
+	t.AddRow([]any{"Jack", "40", "Paris"}...)
 	t.Render()
 
 	fmt.Println(buf.String())
@@ -114,9 +114,9 @@ func ExampleTable_SetHeader_noCall() {
 	buf := new(bytes.Buffer)
 	t := New(buf)
 	// t.SetHeader([]string{"Name", "Age", "City"}) // with no headers, show Unknown[1,2,3...]
-	t.AddRow([]string{"John", "30", "New York"}...)
-	t.AddRow([]string{"Jane", "20", "London"}...)
-	t.AddRow([]string{"Jack", "40", "Paris"}...)
+	t.AddRow([]any{"John", "30", "New York"}...)
+	t.AddRow([]any{"Jane", "20", "London"}...)
+	t.AddRow([]any{"Jack", "40", "Paris"}...)
 	t.Render()
 
 	fmt.Println(buf.String())
@@ -132,9 +132,9 @@ func ExampleNew_withOptions_csv() {
 	buf := new(bytes.Buffer)
 	t := New(buf, WithSep(","))
 	t.SetHeader([]string{"Name", "Age", "City"})
-	t.AddRow([]string{"John", "30", "New York"}...)
-	t.AddRow([]string{"Jane", "20", "London"}...)
-	t.AddRow([]string{"Jack", "40", "Paris"}...)
+	t.AddRow([]any{"John", "30", "New York"}...)
+	t.AddRow([]any{"Jane", "20", "London"}...)
+	t.AddRow([]any{"Jack", "40", "Paris"}...)
 	t.Render()
 
 	fmt.Println(buf.String())
@@ -156,11 +156,11 @@ func ExampleTable_builder() {
 		WithFlags(AlignRight | Debug).
 		WithSep("\t").
 		WithHeader([]string{"Name", "Age", "City"}).
-		WithRow([]string{"John", "30", "New York"}...).
-		WithRow([]string{"Jane", "20", "London"}...).
+		WithRow([]any{"John", "30", "New York"}...).
+		WithRow([]any{"Jane", "20", "London"}...).
 		Build()
 
-	t.AddRow([]string{"Jack", "40", "Paris"}...)
+	t.AddRow([]any{"Jack", "40", "Paris"}...)
 
 	t.Render()
 
@@ -181,16 +181,16 @@ func ExampleTable_builder2() {
 
 		// add header and rows before building
 	t.WithHeader([]string{"Name", "Age", "City"})
-	t.WithRow([]string{"John", "30", "New York"}...)
-	t.WithRow([]string{"Jane", "20", "London"}...)
-	t.WithRow([]string{"Jack", "40", "Paris"}...)
-	t.WithRow([]string{"Christian", "47", "Barcelona"}...)
+	t.WithRow([]any{"John", "30", "New York"}...)
+	t.WithRow([]any{"Jane", "20", "London"}...)
+	t.WithRow([]any{"Jack", "40", "Paris"}...)
+	t.WithRow([]any{"Christian", "47", "Barcelona"}...)
 
 	// build the table
 	table := t.Build()
 
 	// add a new row after building
-	table.AddRow([]string{"Ely", "50", "Barcelona"}...)
+	table.AddRow([]any{"Ely", "50", "Barcelona"}...)
 
 	// render the table
 	table.Render()
